@@ -1,0 +1,7 @@
+Room App (Android - smartphone) 
+	mobile app that makes it possible to manually control lights and roller blinds 
+	it interacts with the Room Controller via Bluetooth 
+
+Room App - based on Android (either real device or emulated) or any other mobile platform
+	for real device, the communication with the Room Control must be base on  the BT wireless technology
+	for emulated devices, the communication can be done using the serial line communicating with the Android Emulator through a software  bridge, as presented in lab 

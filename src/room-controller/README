@@ -1,0 +1,8 @@
+Room Controller (Arduino) 
+    embedded system controlling lighting and roller blinds 
+    it interacts via serial line with the Room Service and via BT with the Room App
+
+Room Controller - based on Arduino
+    the control logic must be designed and implemented using finite state machines (synchronous or asynchronous)
+    must communicate with the Room Service via serial line
+

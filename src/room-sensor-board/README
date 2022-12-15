@@ -1,0 +1,6 @@
+Room Sensor-Board (esp) 
+    embedded system to monitor the state of the room by using a set of sensors
+    It interacts with the Room Service (via MQTT1)
+
+Room Sensor-Board - based on ESP32
+    must use either the MQTT or HTTP to communicate with the Room Service

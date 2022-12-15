@@ -1,0 +1,9 @@
+Room Service (backend - pc) 
+    service functioning as the main unit governing the management of the room 
+    it interacts through the serial line with the Controller (arduino) 
+    it interacts via MQTT with the Room SensorBoard (esp)
+    it interacts via HTTP with the Dashboard (frontend/PC) 
+
+Room Service - in execution on a PC
+    no specific constraints about the programming/sw technology to be used
+    must use either MQTT or HTTP to communicate with the Room Sensor-Board
