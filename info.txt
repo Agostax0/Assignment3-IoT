@@ -1,0 +1,14 @@
+se nessuno è nella stanza, il led(esp) deve essere spento
+
+se qualcuno entra e la stanza è buia allora bisogna accendere il led (esp)
+
+bisogna aprire completamente il servo se : sono passate le 8 di mattina e qualcuno è
+entrato per la prima volta nella stanza
+
+bisogna chiudere completamente il servo se: sono passate le 19 di sera se sono aperte e 
+nessuno è presente nella stanza
+
+attraverso l'app si può accendere/spegnere il led(arduino), aprire/chiudere il servo
+
+attraverso il sito si può: tracciare lo stato della stanza( a che ora e per quanto le luci sono rimaste accese),
+	controllare l'apertura del led(arduino) e aprire/chiudere il servo
