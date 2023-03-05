@@ -11,6 +11,9 @@ struct Action{
 #define LED_ID 1
 #define SERVO_ID 2
 
+const String HARDUINO = "A";
 const String BACKEND = "B";
+const String SMARTPHONE = "S";
+
 
 #endif

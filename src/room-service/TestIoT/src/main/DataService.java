@@ -26,10 +26,12 @@ public class DataService extends AbstractVerticle {
 	private int port;
 	private static final int MAX_SIZE = 10;
 	private LinkedList<DataPoint> values;
+	private RoomState room;
 	
-	public DataService(int port) {
+	public DataService(int port,RoomState room) {
 		values = new LinkedList<>();		
 		this.port = port;
+		this.room = room;
 	}
 
 	@Override
@@ -60,16 +62,13 @@ public class DataService extends AbstractVerticle {
 		if (res == null) {
 			sendError(400, response);
 		} else {
-			//System.out.println(res.toString());
+			System.out.println(res.toString());
 			String command = res.getString("command");
-			long time = System.currentTimeMillis();
+			//long time = System.currentTimeMillis();
 			
-			values.addFirst(new DataPoint(time, command));
-			if (values.size() > MAX_SIZE) {
-				values.removeLast();
-			}
+			room.addToHistory(new DataPoint(command));
 			
-			log("New command: " + command + " on " + new Date(time));
+			//log("New command: " + command + " on " + new Date(time));
 			response.setStatusCode(200).end();
 		}
 	}

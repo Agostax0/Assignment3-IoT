@@ -4,8 +4,8 @@ MyMsg:: MyMsg(String input){
     this->s = input;
 };
 
-String MyMsg::createMessage(String D,int ID,int value){
-    this->s = "A,"+D+"{"+String(ID)+"}";
+String MyMsg::createMessage(String S, String D,int ID,int value){
+    this->s = S+","+D+"{"+String(ID)+"}";
 
     String formatted_value = "";
 
@@ -21,7 +21,7 @@ String MyMsg::createMessage(String D,int ID,int value){
     
     this->s += "["+formatted_value+"]";
 
-    return this->s;
+    return this->s + "|";
 }
 
 Action MyMsg::interpret(){

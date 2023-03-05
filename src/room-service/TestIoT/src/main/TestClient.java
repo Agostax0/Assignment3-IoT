@@ -16,8 +16,7 @@ public class TestClient extends AbstractVerticle {
 		Vertx vertx = Vertx.vertx();
 		
 		JsonObject item = new JsonObject();
-		item.put("value", 20 + Math.random()*5);
-		item.put("place","nowhere");
+		item.put("command", "E,B{3}[111]");
 
 		WebClient client = WebClient.create(vertx);
 

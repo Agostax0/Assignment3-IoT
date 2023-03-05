@@ -6,7 +6,7 @@ class MyMsg
 public:
     MyMsg(String input);
     
-    String createMessage(String Dest, int ID, int value);
+    String createMessage(String Source, String Dest, int ID, int value);
 
     Action interpret();
 

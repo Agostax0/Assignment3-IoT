@@ -52,20 +52,20 @@ void loop()
   {
     Serial.print("#E,B{PIR_ID}[111] ");
     retCode = sendData(serviceURI, "E,B{" + String(PIR_ID) + "}[111]");
-    Serial.println(retCode == 200 ? "Success" : "Failure");
+    Serial.println(retCode == 200 ? "Success" : "Failure "+String(retCode));
   }
   else
   { // none is in the room
     Serial.print("#E,B{PIR_ID}[000]");
     retCode = sendData(serviceURI, "E,B{"+ String(PIR_ID) +"}[000]");
-    Serial.println(retCode == 200 ? "Success" : "Failure");
+    Serial.println(retCode == 200 ? "Success" : "Failure "+String(retCode));
   }
 
   int light_level = analogRead(ll_sensor_pin);
   Serial.print("#E,B{LS_ID}[+" + String(light_level) + String("] "));
   retCode = sendData(serviceURI, "E,B{" + String(LS_ID) + "}["+String(light_level)+"]");
 
-  Serial.println(retCode == 200 ? "Success" : "Failure");
+  Serial.println(retCode == 200 ? "Success" : "Failure "+String(retCode));
 
   delay(30000);
 }
