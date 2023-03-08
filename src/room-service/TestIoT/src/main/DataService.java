@@ -24,12 +24,9 @@ import java.util.Map;
 public class DataService extends AbstractVerticle {
 
 	private int port;
-	private static final int MAX_SIZE = 10;
-	private LinkedList<DataPoint> values;
 	private RoomState room;
 	
-	public DataService(int port,RoomState room) {
-		values = new LinkedList<>();		
+	public DataService(int port,RoomState room) {		
 		this.port = port;
 		this.room = room;
 	}
@@ -62,7 +59,7 @@ public class DataService extends AbstractVerticle {
 		if (res == null) {
 			sendError(400, response);
 		} else {
-			System.out.println(res.toString());
+			System.out.println("recvd: " + res.toString());
 			String command = res.getString("command");
 			//long time = System.currentTimeMillis();
 			
@@ -74,13 +71,19 @@ public class DataService extends AbstractVerticle {
 	}
 	
 	private void handleGetData(RoutingContext routingContext) {
+		
+		System.out.println("request for data");
+		
 		JsonArray arr = new JsonArray();
-		for (DataPoint p: values) {
+		for (Device d: this.room.getDeviceStates()) {
 			JsonObject data = new JsonObject();
-			data.put("time", p.getTime());
-			data.put("command", p.getCommand());
+			data.put("name", d.getName());
+			data.put("value", d.getValue());
 			arr.add(data);
 		}
+		
+		
+		
 		routingContext.response()
 			.putHeader("Access-Control-Allow-Origin", "*")
 			.putHeader("content-type", "application/json")

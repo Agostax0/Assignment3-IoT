@@ -39,12 +39,12 @@ public class SerialCommunication {
                     if (terminatorIndex != -1) {
                         String response = responseString.substring(0, terminatorIndex);
                         responseString = responseString.substring(terminatorIndex + 1);
-                        System.out.println("Serial Received String: " + response);
+                        //System.out.println("Serial Received String: " + response);
                        
                         JsonObject item = new JsonObject();
                 		item.put("command",response);
                        
-                		System.out.println("sending: "+response);
+                		//System.out.println("sending: "+response);
                 		
                         client
                 		.post(8080, "localhost", "/api/data")

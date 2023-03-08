@@ -4,34 +4,18 @@ package main;
 
 
 
-import java.time.LocalTime;
+
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import main.DataPoint;
 import com.fazecast.jSerialComm.*;
-
+import java.time.*;
 
 public class RoomState {
-	private enum Actuators {
-	    LED(1),
-	    SERVO(2),
-	    PIR(3),
-	    LL(4);
-
-	    private int id;
-
-	    private Actuators(int id) {
-	        this.id = id;
-	    }
-
-	    public int getId() {
-	        return id;
-	    }
-	}
 	private LinkedList<DataPoint> history = new LinkedList<>();
 	private LinkedList<Device> device_states =  new LinkedList<>(
-			List.of(new Device("LED"), new Device("SERVO"), new Device("PIR"), new Device("LL")));
+			List.of(new Device("Dummy"),new Device("LED"), new Device("SERVO"), new Device("PIR"), new Device("LL")));
 	
 
 	private final int MAX_STATES = 100;
@@ -44,15 +28,28 @@ public class RoomState {
 	private final String ARDUINO = "A";
 	private final String BACKEND = "B";
 	
+	private final int LED = 1;
+	private final int SERVO = 2;
+	private final int PIR = 3;
+	private final int LL = 4;
+	
 	private boolean firstTimeEntering = true;
 	
-	private final LocalTime _8AM = LocalTime.of(8, 0);
-	private final LocalTime _7PM = LocalTime.of(19, 0);
+	private final int _8AM = 800;
+	private final int _7PM = 1900;
 	
 	private SerialCommunication comm;
 	
 	public RoomState(SerialCommunication comm) {
 		this.comm = comm;
+	}
+	
+	public LinkedList<DataPoint> getHistory(){
+		return this.history;
+	}
+	
+	public LinkedList<Device> getDeviceStates(){
+		return this.device_states;
 	}
 	
 	public void addToHistory(DataPoint d) {
@@ -63,7 +60,6 @@ public class RoomState {
 		
 		updateState(d);
 	}
-
 	
 	private void updateState(DataPoint d) {
 		
@@ -76,53 +72,62 @@ public class RoomState {
 			if(d.getSource().equals(FRONTEND)) {
 				//actions are to be taken
 				String cmd = "B,A{"+d.getDeviceID()+"}["+d.getValue()+"]|";
-				comm.write(cmd);
-			}
-			
-			LocalTime currentTime = LocalTime.now();
-			
-			if(currentTime.isAfter(_8AM) && currentTime.isBefore(_7PM)) {
-				//8AM TO 7PM
-
+				device_states.get(d.getDeviceID()).update(d.getValue());
+				//comm.write(cmd);
 			}
 			else {
-				//7PM TO 8AM
+				device_states.get(d.getDeviceID()).update(d.getValue());
+				checkIntegrity();
 			}
 			
-			device_states.get(d.getDeviceID() - 1).update(d.getValue());
+			
+			
+			
 		}
-		
+	}
 
-		/*device_states.get(p.getDeviceID() - 1).update(p.getValue());
-		if(device_states.stream().allMatch(elem -> elem.getValue()!=-1)) {
-			System.out.println("updating room");
-			device_states.forEach(device -> System.out.println(device.toString()));
-			RoomState.update();
-		}*/
+	private void checkIntegrity() {
 		
-		/*if(getDeviceRefValue(Device_Enum.PIR_ID)==0) {
-			SerialMonitor.write("B,A{1}[000]".getBytes());
-		}else {
-			if(getDeviceRefValue(Device_Enum.LED_ID)==0 && getDeviceRefValue(Device_Enum.LL_ID)/4 < LIGHT_LEVEL_THRESHOLD) {
-				SerialMonitor.write("B,A{1}[111]".getBytes());
-			}
-		}
+		Device PIR_Device = device_states.get(PIR);
+		Device LL_Device = device_states.get(LL);
+		Device LED_Device = device_states.get(LED);
+		Device SERVO_Device = device_states.get(SERVO);
 		
-		int timeOfDay = new Date().getHours()*10 + new Date().getMinutes();
-		
-		if(timeOfDay > 800 && timeOfDay < 1900) {
-			if(firstTimeOpening && getDeviceRefValue(Device_Enum.PIR_ID)!=0) {
-				firstTimeOpening = false;
-				SerialMonitor.write("B,A{2}[000]".getBytes()); //OPENING THE BLINDERS
+		if(PIR_Device.getValue()!=0) {
+			//someone is detected
+			if(LED_Device.getValue()==0 && LL_Device.getValue()/4 < LIGHT_LEVEL_THRESHOLD) {
+				//LED is off and Light is low enough
+				comm.write("B,A{"+LED+"}"+"["+"111"+"]|");
+				LED_Device.update(111);
+				//turn on the led
 			}
 		}
 		else {
-			if(getDeviceRefValue(Device_Enum.PIR_ID)==0 && getDeviceRefValue(Device_Enum.SERVO_ID)<180) {
-				firstTimeOpening = true;
-				SerialMonitor.write("B,A{2}[180]".getBytes());//CLOSING THE BLINDERS
-				//Comm.write("B,A{2}[180]"); 
+			//none is detected
+			comm.write("B,A{"+LED+"}"+"["+"000"+"]|");
+			LED_Device.update(000);
+		}
+		
+		int currentTime = new Date().getHours()*100 + new Date().getMinutes();
+		
+		if(currentTime > (_8AM) && currentTime<(_7PM)) {
+			//8AM TO 7PM
+			if(firstTimeEntering && PIR_Device.getValue()!=0) {
+				firstTimeEntering = false;
+				//opening the curtains
+				comm.write("B,A{"+SERVO+"}"+"["+"000"+"]|");
+				SERVO_Device.update(000);
 			}
-		}*/
+		}
+		else {
+			//7PM TO 8AM
+			if(PIR_Device.getValue()==0 && SERVO_Device.getValue()<180) {
+				//closing the curtains
+				comm.write("B,A{"+SERVO+"}"+"["+"180"+"]|");
+				SERVO_Device.update(180);
+			}
+		}
+		
 	}
 	
 	
