@@ -39,16 +39,23 @@ public class SerialCommunication {
                     if (terminatorIndex != -1) {
                         String response = responseString.substring(0, terminatorIndex);
                         responseString = responseString.substring(terminatorIndex + 1);
-                        //System.out.println("Serial Received String: " + response);
+                        System.out.println("Received String: " + response + "\t enable debug: " + String.valueOf(response.charAt(0)=='#'));
                        
-                        JsonObject item = new JsonObject();
-                		item.put("command",response);
-                       
-                		//System.out.println("sending: "+response);
-                		
-                        client
-                		.post(8080, "localhost", "/api/data")
-                		.sendJson(item);
+                        if(response.charAt(0)=='#') {
+                        	System.out.println("DEBUG Received String: " + response);
+                        }
+                        else {
+                        	JsonObject item = new JsonObject();
+                    		item.put("command",response.strip());
+                           
+                    		//System.out.println("sending: "+response);
+                    		
+                            client
+                    		.post(8080, "localhost", "/api/data")
+                    		.sendJson(item);
+                        }
+                        
+                        
                     }
 
                     

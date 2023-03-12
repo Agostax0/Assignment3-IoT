@@ -9,17 +9,24 @@ function update() {
     })
         .then(function (res) {
 
-            document.getElementById('LED_VALUE').innerText = res.data[1].value;
             if(parseInt(res.data[1].value)>0){
+                document.getElementById('LED_VALUE').innerText = "ON"
                 val = 1;
                 updateLightBulbIcon();
             }
             else{
+                document.getElementById('LED_VALUE').innerText = "OFF"
                 val = 0;
                 updateLightBulbIcon();
             }
+            
             document.getElementById('SERVO_VALUE').innerText = res.data[2].value;
+            document.getElementById('2').value = res.data[2].value;
+
+
             document.getElementById('PIR_VALUE').innerText = res.data[3].value;
+
+
             document.getElementById('LL_VALUE').innerText = res.data[4].value;
 
         })

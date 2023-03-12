@@ -71,13 +71,20 @@ public class RoomState {
 			
 			if(d.getSource().equals(FRONTEND)) {
 				//actions are to be taken
-				String cmd = "B,A{"+d.getDeviceID()+"}["+d.getValue()+"]|";
+				String cmd = "B,A{"+d.getDeviceID()+"}["+d.getValue()+"11]|";
 				device_states.get(d.getDeviceID()).update(d.getValue());
-				//comm.write(cmd);
+				//comm.write("B,A{1}[111]|".strip());
+				
+				if(d.getDeviceID() == LED) {
+					comm.write("B,A{1}["+ (d.getValue()>0 ? "111" : "000") +"]|".strip());
+				}
+				else {
+					comm.write("B,A{"+d.getDeviceID()+"}["+ d.getValue() +"]|".strip());
+				}
 			}
 			else {
 				device_states.get(d.getDeviceID()).update(d.getValue());
-				checkIntegrity();
+				//checkIntegrity();
 			}
 			
 			

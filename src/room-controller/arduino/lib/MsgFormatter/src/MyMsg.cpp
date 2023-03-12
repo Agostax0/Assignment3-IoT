@@ -27,7 +27,7 @@ String MyMsg::createMessage(String S, String D,int ID,int value){
 Action MyMsg::interpret(){
     Action res;
 
-    //Serial.println(this->s);
+    //Serial.println("msg_recv: "+this->s);
 
     res.source = this->s.substring(0,1);
     res.ID = this->s.substring(4,5).toInt();

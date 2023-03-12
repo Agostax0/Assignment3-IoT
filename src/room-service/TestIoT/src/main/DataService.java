@@ -59,7 +59,7 @@ public class DataService extends AbstractVerticle {
 		if (res == null) {
 			sendError(400, response);
 		} else {
-			System.out.println("recvd: " + res.toString());
+			//System.out.println("recvd: " + res.toString());
 			String command = res.getString("command");
 			//long time = System.currentTimeMillis();
 			
