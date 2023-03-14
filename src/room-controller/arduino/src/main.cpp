@@ -5,13 +5,25 @@
 #include <EventQueue.h>
 SoftwareSerial bluetooth_serial(8, 9);
 
-const int ledPin = 4;
+const int ledPin = 7;
 const int servoPin = 5;
 int debug = HIGH;
 ServoTimer2 servo;
 
-EventQueue eventQueue;
+enum State
+{
+  IDLE,
+  COMMAND_RECEIVED,
+  SERVO_MOVEMENT,
+  LED_ON,
+  LED_OFF,
+  SEND_TO_APP,
+  SEND_TO_PC,
+  ERROR
+};
 
+int currentState = IDLE;
+Action action;
 void setup()
 {
   Serial.begin(9600);
@@ -25,7 +37,10 @@ void setup()
 
   pinMode(13, OUTPUT);
 
-  eventQueue = EventQueue();
+
+  digitalWrite(ledPin,HIGH);
+  delay(300);
+  digitalWrite(ledPin,LOW);
 }
 
 void processSerial(Stream &serial, String source)
@@ -37,52 +52,89 @@ void processSerial(Stream &serial, String source)
     digitalWrite(13, debug);
     debug = !debug;
 
-    eventQueue.enqueue(Event(message));
-  } 
+    action = MyMsg(message).interpret();
+
+    currentState = COMMAND_RECEIVED;
+    Serial.print(MyMsg("#").createMessage("COMMAND_RECEIVED", action.source, action.ID, action.value));
+  }
 }
-void handleEvent(Event &ev)
+
+int redirectInfo(String Source)
 {
-  Action action = MyMsg(ev.getCommand()).interpret();
-
-  // Serial.print(MyMsg("").createMessage(SMARTPHONE, BACKEND, action.ID, action.value));
-
-  if (action.source.equals(SMARTPHONE))
+  if (Source.equals(BACKEND))
   {
-    Serial.print(MyMsg("").createMessage(SMARTPHONE, BACKEND, action.ID, action.value));
-    // Serial.println(MyMsg("").createMessage(SMARTPHONE, BACKEND, action.ID, action.value));
+    Serial.print(MyMsg("#").createMessage("SEND_TO_APP", action.source, action.ID, action.value));
+    return SEND_TO_APP;
   }
-
-  switch (action.ID)
+  else
   {
-  case LED_ID:
-    // Serial.println("led");
-    digitalWrite(ledPin, action.value > 0 ? HIGH : LOW);
-    break;
-  case SERVO_ID:
-    // Serial.println("servo");
-    servo.write(map(action.value, 0, 180, 750, 2250));
-    break;
-  default:
-    // Serial.println("default");
-    break;
-  }
-
-  if (action.source.equals("PC"))
-  {
-    String update = MyMsg("").createMessage(HARDUINO, SMARTPHONE, action.ID, action.value);
-    Serial.print("#" + update);
-    bluetooth_serial.print(update);
+    Serial.print(MyMsg("#").createMessage("SEND_TO_PC", action.source, action.ID, action.value));
+    return SEND_TO_PC;
   }
 }
 
 void loop()
 {
-  processSerial(Serial, "PC");
-  processSerial(bluetooth_serial, "BT");
-
-  while(!eventQueue.isEmpty()){
-    Event event = eventQueue.dequeue();
-    handleEvent(event);
+  switch (currentState)
+  {
+  case IDLE:
+    // Serial.print(MyMsg("#").createMessage("IDLE", "", 0, 0));
+    processSerial(Serial, "PC");
+    processSerial(bluetooth_serial, "BT");
+    break;
+  case COMMAND_RECEIVED:
+    Serial.print(MyMsg("#").createMessage("COMMAND_RECEIVED", action.source, action.ID, action.value));
+    switch (action.ID)
+    {
+    case LED_ID:
+      if (action.value > 0)
+      {
+        Serial.print(MyMsg("#").createMessage("LED_ON", action.source, action.ID, action.value));
+        currentState = LED_ON;
+      }
+      else
+      {
+        Serial.print(MyMsg("#").createMessage("LED_OFF", action.source, action.ID, action.value));
+        currentState = LED_OFF;
+      }
+      break;
+    case SERVO_ID:
+      Serial.print(MyMsg("#").createMessage("SERVO_MOVEMENT", action.source, action.ID, action.value));
+      currentState = SERVO_MOVEMENT;
+      break;
+    }
+    break;
+    // currentState = ERROR;
+  case LED_ON:
+    
+    digitalWrite(ledPin, HIGH);
+    Serial.print(MyMsg("#").createMessage("LED_TURNED_ON", action.source, action.ID, action.value));
+    currentState = redirectInfo(action.source);
+    break;
+  case LED_OFF:
+    digitalWrite(ledPin, LOW);
+    Serial.print(MyMsg("#").createMessage("LED_TURNED_OFF", action.source, action.ID, action.value));
+    currentState = redirectInfo(action.source);
+    break;
+  case SERVO_MOVEMENT:
+    servo.write(map(action.value, 0, 180, 750, 2250));
+    currentState = redirectInfo(action.source);
+    break;
+  case SEND_TO_APP:
+    bluetooth_serial.print(MyMsg("").createMessage(HARDUINO, SMARTPHONE, action.ID, action.value));
+    currentState = IDLE;
+    break;
+  case SEND_TO_PC:
+    Serial.print(MyMsg("").createMessage(SMARTPHONE, BACKEND, action.ID, action.value));
+    currentState = IDLE;
+    break;
+  case ERROR:
+    Serial.print(MyMsg("#").createMessage("ERROR", "", -1, -1));
+    currentState = IDLE;
+    break;
+  default:
+    Serial.print(MyMsg("#").createMessage("ERROR", "def", -2, -2));
+    currentState = IDLE;
+    break;
   }
 }
-

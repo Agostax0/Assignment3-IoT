@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /*
  * Data Service as a vertx event-loop 
@@ -59,7 +60,7 @@ public class DataService extends AbstractVerticle {
 		if (res == null) {
 			sendError(400, response);
 		} else {
-			//System.out.println("recvd: " + res.toString());
+			System.out.println("recvd: " + res.toString());
 			String command = res.getString("command");
 			//long time = System.currentTimeMillis();
 			
@@ -75,14 +76,38 @@ public class DataService extends AbstractVerticle {
 		System.out.println("request for data");
 		
 		JsonArray arr = new JsonArray();
+		
+		JsonArray dev = new JsonArray();
 		for (Device d: this.room.getDeviceStates()) {
 			JsonObject data = new JsonObject();
 			data.put("name", d.getName());
 			data.put("value", d.getValue());
-			arr.add(data);
+			dev.add(data);
 		}
+		JsonObject device = new JsonObject();
+		device.put("devices", dev);
+		arr.add(device);
 		
+		JsonArray hs = new JsonArray();
 		
+		var history = this.room.getHistory();
+		
+		var time_span_key = history.keySet().parallelStream().sorted().collect(Collectors.toList()); 
+		
+		for (Long time : time_span_key) {
+			
+			var state = history.get(time);
+			
+			JsonObject data = new JsonObject();
+			data.put("time", formatTime(time));
+			data.put("LED", state.get(1).getValue()>0 ? 120 : 0);
+			data.put("SERVO", state.get(2).getValue());
+			data.put("PIR", state.get(3).getValue());
+			data.put("LL", state.get(4).getValue() / 4);
+			//data.put("value", d.getDeviceID()==1 ? d.getValue()>0 ? 111 : 000 : d.getValue());
+			hs.add(data);
+		}
+		arr.add(hs);
 		
 		routingContext.response()
 			.putHeader("Access-Control-Allow-Origin", "*")
@@ -96,6 +121,10 @@ public class DataService extends AbstractVerticle {
 
 	private void log(String msg) {
 		System.out.println("[DATA SERVICE] "+msg);
+	}
+	
+	private String formatTime(long time) {
+		return new Date(time).getHours() +":"+new Date(time).getMinutes() +":"+ new Date(time).getSeconds();
 	}
 
 }

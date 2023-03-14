@@ -6,14 +6,17 @@ package main;
 
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+
 import main.DataPoint;
 import com.fazecast.jSerialComm.*;
 import java.time.*;
 
 public class RoomState {
-	private LinkedList<DataPoint> history = new LinkedList<>();
+	private Map<Long,LinkedList<Device>> history = new HashMap<>();
 	private LinkedList<Device> device_states =  new LinkedList<>(
 			List.of(new Device("Dummy"),new Device("LED"), new Device("SERVO"), new Device("PIR"), new Device("LL")));
 	
@@ -44,7 +47,7 @@ public class RoomState {
 		this.comm = comm;
 	}
 	
-	public LinkedList<DataPoint> getHistory(){
+	public Map<Long, LinkedList<Device>> getHistory(){
 		return this.history;
 	}
 	
@@ -53,10 +56,6 @@ public class RoomState {
 	}
 	
 	public void addToHistory(DataPoint d) {
-		history.addFirst(d);
-		if (history.size() > MAX_STATES) {
-			history.removeLast();
-		}
 		
 		updateState(d);
 	}
@@ -84,13 +83,26 @@ public class RoomState {
 			}
 			else {
 				device_states.get(d.getDeviceID()).update(d.getValue());
-				//checkIntegrity();
+				checkIntegrity();
 			}
 			
 			
+			//adding the current state of the machine
+			var state = new LinkedList<>(
+					List.of(new Device("Dummy"),new Device("LED"), new Device("SERVO"), new Device("PIR"), new Device("LL")));
 			
+			//System.out.println("??");
+			
+			state.get(LED).update(device_states.get(LED).getValue());
+			state.get(SERVO).update(device_states.get(SERVO).getValue());
+			state.get(PIR).update(device_states.get(PIR).getValue());
+			state.get(LL).update(device_states.get(LL).getValue());
+			
+			this.history.put(System.currentTimeMillis(), state);
 			
 		}
+		
+		
 	}
 
 	private void checkIntegrity() {

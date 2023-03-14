@@ -39,10 +39,10 @@ public class SerialCommunication {
                     if (terminatorIndex != -1) {
                         String response = responseString.substring(0, terminatorIndex);
                         responseString = responseString.substring(terminatorIndex + 1);
-                        System.out.println("Received String: " + response + "\t enable debug: " + String.valueOf(response.charAt(0)=='#'));
+                        //System.out.println("Received String: " + response + "\t enable debug: " + String.valueOf(response.charAt(0)=='#'));
                        
                         if(response.charAt(0)=='#') {
-                        	System.out.println("DEBUG Received String: " + response);
+                        	//System.out.println("DEBUG Received String: " + response);
                         }
                         else {
                         	JsonObject item = new JsonObject();

@@ -5,7 +5,7 @@ MyMsg:: MyMsg(String input){
 };
 
 String MyMsg::createMessage(String S, String D,int ID,int value){
-    this->s = S+","+D+"{"+String(ID)+"}";
+    this->s = this->s + S+","+D+"{"+String(ID)+"}";
 
     String formatted_value = "";
 

@@ -77,4 +77,4 @@ document.getElementById("1").addEventListener('click',function(event){
     post(1,val);
 });
 
-//setInterval(update, 5000);
+setInterval(update, 5000);
